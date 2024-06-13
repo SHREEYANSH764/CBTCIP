@@ -1,1 +1,36 @@
-import panda as pa
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+#using the ARIMA model for this project
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.metrics import mean_squared_error
+
+df = pd.read_csv('gold_price_data.csv', index_col='date', parse_dates=['date'])
+# For to plot the previous data
+plt.plot(df.index, df['value'])
+plt.title('Gold Price previous Data')
+plt.xlabel('Date')
+plt.ylabel('Value')
+plt.show()
+
+# Now we will split the data into sets for training and testing purpose
+train_size = int(1.2 * len(df))
+train_data, test_data = df[0:train_size], df[train_size:]
+# Using the ARIMA model for sets
+model = ARIMA(train_data, order=(2, 1, 2)) 
+model_fit = model.fit()
+# Now to forecast/predict future values
+predict = model_fit.forecast(steps=49)  # to predict the value at 49 days ahead
+# Using RMSE to evaluate the model
+mse = mean_squared_error(test_data, model_fit.fittedvalues)
+rmse = np.sqrt(mse)
+print(f'Value of RMSE : {rmse:.2f}')
+
+plt.plot(train_data.index, train_data, label='Data for training')
+plt.plot(test_data.index, test_data, label='Data for testing')
+plt.plot(predict[0], label='Prediction')
+plt.title('Gold Prize Prediction')
+plt.xlabel('Date')
+plt.ylabel('Value')
+plt.legend()
+plt.show()
